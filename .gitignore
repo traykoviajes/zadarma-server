@@ -1,0 +1,12 @@
+node_modules/
+.env
+.env.*
+!.env.example
+dist/
+coverage/
+*.log
+.DS_Store
+*-credentials.json
+google-service-account.json
+oauth-client.json
+tools/.token-cache.json
