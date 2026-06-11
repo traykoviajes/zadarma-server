@@ -16,16 +16,12 @@ if (!secret) {
 }
 
 const signatureString = `${body.pbx_call_id}${body.call_id_with_rec}`;
-const expected = crypto
-  .createHmac('sha1', secret)
-  .update(signatureString)
-  .digest();
-
-const expectedBase64 = expected.toString('base64');
+const hex = crypto.createHmac('sha1', secret).update(signatureString).digest('hex');
+const expectedBase64 = Buffer.from(hex, 'utf8').toString('base64');
 
 console.log('String firmado:', signatureString);
 console.log('Secreto (primeros 6 chars):', secret.slice(0, 6) + '...');
-console.log('HMAC-SHA1 (hex):    ', expected);
+console.log('HMAC-SHA1 (hex):    ', hex);
 console.log('HMAC-SHA1 (base64): ', expectedBase64);
 console.log('Recibido de Zadarma:', received);
 console.log('¿Coincide base64?    ', expectedBase64 === received ? '✅ SÍ' : '❌ NO');

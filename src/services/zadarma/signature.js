@@ -2,8 +2,9 @@ const crypto = require('crypto');
 const { getEnv } = require('../../config/env');
 
 function encodeSignature(signatureString, secret) {
-  const digest = crypto.createHmac('sha1', secret).update(signatureString).digest();
-  return digest.toString('base64');
+  // Zadarma (PHP hash_hmac) devuelve hex y luego base64_encode sobre ese string.
+  const hex = crypto.createHmac('sha1', secret).update(signatureString).digest('hex');
+  return Buffer.from(hex, 'utf8').toString('base64');
 }
 
 function verifyNotifyRecord(body, signatureHeader) {
