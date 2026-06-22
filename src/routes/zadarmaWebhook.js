@@ -1,6 +1,7 @@
 const express = require('express');
 const { verifyNotifyRecord } = require('../services/zadarma/signature');
 const { processRecording } = require('../services/zadarma/processRecording');
+const { getEnv } = require('../config/env');
 
 const router = express.Router();
 
@@ -22,13 +23,20 @@ router.post('/', express.urlencoded({ extended: true }), (req, res) => {
     return;
   }
 
-  if (!verifyNotifyRecord(body, signature)) {
+  const { verifyWebhookSignature } = getEnv();
+  if (verifyWebhookSignature && !verifyNotifyRecord(body, signature)) {
     console.warn(
       '[webhook] Firma inválida para NOTIFY_RECORD',
       { receivedSignature: signature, body }
     );
     res.sendStatus(403);
     return;
+  }
+
+  if (!verifyWebhookSignature) {
+    console.warn(
+      '[webhook] VERIFY_WEBHOOK_SIGNATURE=false — firma NO verificada'
+    );
   }
 
   const { call_id_with_rec: callIdWithRec, pbx_call_id: pbxCallId } = body;
