@@ -8,7 +8,7 @@ const {
 } = require('../drive/folders');
 
 const MAX_DOWNLOAD_ATTEMPTS = 3;
-const RETRY_DELAY_MS = 15000;
+const RETRY_DELAY_MS = 30000;
 const TIMEZONE = 'America/Bogota';
 
 function sleep(ms) {
