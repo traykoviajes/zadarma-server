@@ -48,6 +48,14 @@ async function apiRequest(methodPath, params = {}, httpMethod = 'GET') {
   const data = await response.json();
 
   if (!response.ok || data.status === 'error') {
+    const rateHeaders = {
+      limit: response.headers.get('x-ratelimit-limit'),
+      remaining: response.headers.get('x-ratelimit-remaining'),
+      reset: response.headers.get('x-ratelimit-reset'),
+    };
+    console.error(
+      `[zadarma] ${httpMethod} ${methodPath} -> HTTP ${response.status} message="${data.message}" rate=${JSON.stringify(rateHeaders)}`
+    );
     throw new Error(data.message || `Zadarma API error: HTTP ${response.status}`);
   }
 

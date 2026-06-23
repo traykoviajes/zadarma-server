@@ -7,8 +7,8 @@ const {
   datePathParts,
 } = require('../drive/folders');
 
-const MAX_DOWNLOAD_ATTEMPTS = 3;
-const RETRY_DELAY_MS = 30000;
+const MAX_DOWNLOAD_ATTEMPTS = 5;
+const RETRY_DELAYS_MS = [60000, 90000, 120000, 180000];
 const TIMEZONE = 'America/Bogota';
 
 function sleep(ms) {
@@ -129,6 +129,10 @@ async function processRecording(body) {
   let lastError;
 
   for (let attempt = 1; attempt <= MAX_DOWNLOAD_ATTEMPTS; attempt += 1) {
+    const attemptStart = new Date().toISOString();
+    console.log(
+      `[recording] Intento ${attempt}/${MAX_DOWNLOAD_ATTEMPTS} iniciando a las ${attemptStart} pbx_call_id=${pbxCallId}`
+    );
     try {
       const buffer = await fetchLinkAndDownload({ callIdWithRec, pbxCallId });
       const driveFile = await uploadRecording({
@@ -155,12 +159,16 @@ async function processRecording(body) {
     } catch (error) {
       lastError = error;
       console.error(
-        `[recording] Intento ${attempt}/${MAX_DOWNLOAD_ATTEMPTS} fallido pbx_call_id=${pbxCallId}:`,
+        `[recording] Intento ${attempt}/${MAX_DOWNLOAD_ATTEMPTS} fallido a las ${new Date().toISOString()} pbx_call_id=${pbxCallId}:`,
         error.message
       );
 
       if (attempt < MAX_DOWNLOAD_ATTEMPTS) {
-        await sleep(RETRY_DELAY_MS);
+        const wait = RETRY_DELAYS_MS[attempt - 1] || RETRY_DELAYS_MS[RETRY_DELAYS_MS.length - 1];
+        console.log(
+          `[recording] Esperando ${wait}ms antes del siguiente intento pbx_call_id=${pbxCallId}`
+        );
+        await sleep(wait);
       }
     }
   }
